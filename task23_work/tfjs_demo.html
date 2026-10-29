@@ -1,0 +1,16 @@
+<!doctype html>
+<html><body>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+<canvas id="digit" width="28" height="28"></canvas><p id="out">loading…</p>
+<script>
+  (async () => {
+    // graph model = SavedModel converted with tensorflowjs_converter
+    const model = await tf.loadGraphModel("tfjs_model/model.json");
+    const canvas = document.getElementById("digit");
+    // tf.browser.fromPixels (was tf.fromPixels in older versions) -> grayscale -> 1x28x28 raw 0-255
+    const x = tf.tidy(() => tf.browser.fromPixels(canvas, 1).squeeze(-1).toFloat().expandDims(0));
+    const probs = await model.predict(x).data();      // Rescaling(1/255) is inside the model
+    document.getElementById("out").textContent = "predicted digit: " + probs.indexOf(Math.max(...probs));
+  })();
+</script>
+</body></html>
